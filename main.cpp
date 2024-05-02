@@ -36,13 +36,14 @@ void InitGrid(Grid* grid, Vector2 size, int rows, int cols) {
 
 int RandomInt(int min, int max) { return rand() % (max - min + 1) + min; }
 
-void ProgressGrid(Grid* grid) {
-void ProgressGrid(Grid* grid, int level) {
+enum GameState { PLAYING, GAME_OVER };
+
+GameState ProgressGrid(Grid* grid, int level) {
     for (int r = grid->rows - 1; r >= 0; r--) {
         for (int c = 0; c < grid->cols; c++) {
             if (grid->blocks[r][c].strength > 0) {
-                if (r + 1 > grid->rows) {
-                    throw new exception();
+                if (r + 2 >= grid->rows) {
+                    return GAME_OVER;
                 }
                 grid->blocks[r + 1][c] = Block{grid->blocks[r][c].strength};
                 grid->blocks[r][c] = Block{0};
@@ -58,6 +59,7 @@ void ProgressGrid(Grid* grid, int level) {
             grid->blocks[0][c] = Block{strength};
         }
     }
+    return PLAYING;
 }
 
 #define BLOCK_FONT_SIZE 14
@@ -169,14 +171,12 @@ int main(void) {
 
     Grid grid = {};
     InitGrid(&grid, {(float)sw, (float)base_line_y}, 25, 15);
-
-    grid.blocks[12][8] = Block{5};
-    grid.blocks[10][4] = Block{5};
-    grid.blocks[5][10] = Block{5};
+    ProgressGrid(&grid, 0);
 
     vector<Ball> balls;
     NewBall(&balls, start_x, start_y);
 
+    bool game_over = false;
     bool is_fired = false;
     bool is_aiming = false;
 
@@ -268,12 +268,15 @@ int main(void) {
                 is_fired = false;
                 ball_offset = 0;
                 NewBall(&balls, start_x, start_y);
-                ProgressGrid(&grid);
+                GameState state = ProgressGrid(&grid, shot_count);
+                if (state == GAME_OVER) {
+                    game_over = true;
+                }
             }
         }
 
         bool is_down = false;
-        if (!is_fired && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        if (!game_over && !is_fired && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             is_aiming = true;
             is_down = true;
         }
@@ -284,7 +287,7 @@ int main(void) {
             direction = atan2(dy, dx);
         }
 
-        if (is_aiming && !is_down && direction >= 0) {
+        if (!game_over && is_aiming && !is_down && direction >= 0) {
             is_aiming = false;
             is_fired = true;
             start_set = false;
@@ -297,8 +300,6 @@ int main(void) {
         BeginDrawing();
         ClearBackground(BLACK);
 
-        string text = format("Shots: {}\n", shot_count);
-        DrawText(text.c_str(), 10, 10, 10, WHITE);
         DrawLine(0, base_line_y, sw, base_line_y, WHITE);
         if (is_aiming) {
             int end_x = start_x - AIM_LINE_LENGTH * cos(direction);
@@ -309,6 +310,18 @@ int main(void) {
         DrawGrid(&grid);
         for (Ball ball : balls) {
             DrawCircle(ball.position.x, ball.position.y, BALL_SIZE, WHITE);
+        }
+        if (!is_fired) {
+            string shot_count_text = format("{}\n", balls.size());
+            DrawText(shot_count_text.c_str(),
+                     start_x - BALL_SIZE -
+                         MeasureText(shot_count_text.c_str(), BLOCK_FONT_SIZE) * 2,
+                     base_line_y - BLOCK_FONT_SIZE / 2, BLOCK_FONT_SIZE, WHITE);
+        }
+
+        if (game_over) {
+            DrawText("Game Over", sw / 2 - MeasureText("Game Over", 30) / 2, GetScreenHeight() / 2,
+                     30, RED);
         }
 
         EndDrawing();
