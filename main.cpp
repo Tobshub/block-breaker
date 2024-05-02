@@ -173,7 +173,6 @@ int main(void) {
 
     vector<Ball> balls;
     NewBall(&balls, start_x, start_y);
-    cout << balls.size() << endl;
 
     bool is_fired = false;
     bool is_aiming = false;
@@ -229,23 +228,23 @@ int main(void) {
 
                         Rectangle block = BlockRect(&grid, r, c);
                         if (CheckCollisionCircleRec(ball.position, BALL_SIZE, block)) {
-                            cout << "collision detected" << endl;
+                            // cout << "collision detected" << endl;
                             grid.blocks[r][c].strength--;
                             switch (CircleRectCollision(ball.position, BALL_SIZE, block)) {
                             case CollisionTop:
-                                cout << "collision top" << endl;
+                                // cout << "collision top" << endl;
                                 ball.delta.y *= -1;
                                 break;
                             case CollisionBottom:
-                                cout << "collision bottom" << endl;
+                                // cout << "collision bottom" << endl;
                                 ball.delta.y *= -1;
                                 break;
                             case CollisionLeft:
-                                cout << "collision left" << endl;
+                                // cout << "collision left" << endl;
                                 ball.delta.x *= -1;
                                 break;
                             case CollisionRight:
-                                cout << "collision right" << endl;
+                                // cout << "collision right" << endl;
                                 ball.delta.x *= -1;
                                 break;
                             }
