@@ -180,6 +180,8 @@ int main(void) {
     int shot_count = 0;
     bool start_set = false;
 
+    int ball_offset = 0;
+
     while (!WindowShouldClose()) {
         if (is_fired) {
             bool all_done = true;
@@ -188,6 +190,10 @@ int main(void) {
                 if (!ball.active)
                     continue;
                 all_done = false;
+                ball_offset++;
+
+                if (ball_offset < i * 5)
+                    continue;
 
                 ball.position.x -= ball.delta.x * BALL_SPEED * cos(direction);
                 ball.position.y -= ball.delta.y * BALL_SPEED * sin(direction);
@@ -257,6 +263,7 @@ int main(void) {
             if (all_done) {
                 shot_count++;
                 is_fired = false;
+                ball_offset = 0;
                 NewBall(&balls, start_x, start_y);
                 ProgressGrid(&grid);
             }
