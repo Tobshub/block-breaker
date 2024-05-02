@@ -37,6 +37,7 @@ void InitGrid(Grid* grid, Vector2 size, int rows, int cols) {
 int RandomInt(int min, int max) { return rand() % (max - min + 1) + min; }
 
 void ProgressGrid(Grid* grid) {
+void ProgressGrid(Grid* grid, int level) {
     for (int r = grid->rows - 1; r >= 0; r--) {
         for (int c = 0; c < grid->cols; c++) {
             if (grid->blocks[r][c].strength > 0) {
@@ -52,7 +53,9 @@ void ProgressGrid(Grid* grid) {
     // add new blocks on the top row
     for (int c = 0; c < grid->cols; c++) {
         if (RandomInt(0, 100) < 10) {
-            grid->blocks[0][c] = Block{5};
+            int level_range_start = (level + 1) * 4;
+            int strength = RandomInt(level_range_start, level_range_start + level_range_start / 2);
+            grid->blocks[0][c] = Block{strength};
         }
     }
 }
